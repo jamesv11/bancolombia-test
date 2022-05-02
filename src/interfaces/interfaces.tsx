@@ -48,6 +48,10 @@ export interface Account {
     type: string
 }
 
+export interface PreRegister {
+    user: User
+}
+
 export interface Tag {
     name: string
 }

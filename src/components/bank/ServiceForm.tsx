@@ -2,10 +2,12 @@ import { CustomButton, TextInputForm, FormBase, TitleForm } from "../../componen
 import * as Yup from "yup";
 import { useState } from "react";
 import { Loading } from "../../components/common/Loading";
-import { ACCOUNT_TYPE, CREDIT_CARD_OPTION, User } from "../../interfaces/interfaces";
+import { Account, ACCOUNT_TYPE, CREDIT_CARD_OPTION, User } from "../../interfaces/interfaces";
 import { useNavigate } from "react-router-dom";
 import { CheckBoxForm } from "../common/CheckBoxForm";
 import { SelectForm } from "../common/SelectForm";
+import { v4 as uuidv4 } from 'uuid';
+import { insertAccount } from "../../services/firestoreService";
 
 let schema = Yup.object({
     id: Yup.string()
@@ -132,7 +134,7 @@ export const ServiceForm = ({ idService }: Props) => {
         navigate("/login", { replace: true });
     };
 
-    const onSubmit = (values: { [key: string]: any }) => {
+    const onSubmit = async (values: { [key: string]: any }) => {
 
         const user: User = {
             id: values.id,
@@ -146,6 +148,14 @@ export const ServiceForm = ({ idService }: Props) => {
             terms: values.terms
         };
 
+        const account: Account = {
+            user : user,
+            type : values.accountType
+        }
+
+        const response = await insertAccount(account);
+        console.log(response);
+        
         setLoading(true);
 
     };
