@@ -19,8 +19,8 @@ export const NavBar = () => {
                     />
                     <ul className="flex gap-3 items-center">
                         {publicRoute.map(({ to, name }) => {
-                            return <li>
-                                <NavLink to={to}>
+                            return <li key={to}>
+                                <NavLink  to={to}>
                                     <span className="text-base font-semibold ">{name}</span>
                                 </NavLink>
                             </li>
