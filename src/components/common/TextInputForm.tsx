@@ -21,6 +21,7 @@ export const TextInputForm = ({ label, className, ...props }: Props) => {
         {label}
       </label>
       <input
+      key={props.name}
         className={`${
           className
             ? className

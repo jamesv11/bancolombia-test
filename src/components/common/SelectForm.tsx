@@ -35,9 +35,9 @@ export const SelectForm = ({ label, className, ...props }: Props) => {
                 {...field}
                 {...props}
             >
-                <option value={""}> Selecciona </option>
+                <option value={0}> Selecciona </option>
                 {props.options?.map(({ name, value }) => (
-                    <option key={value} value={value}>{name}</option>
+                    <option key={name} value={value}>{name}</option>
                 ))}
             </Field>
             <ErrorMessage

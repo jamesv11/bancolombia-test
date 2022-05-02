@@ -1,4 +1,4 @@
-import { addDoc, collection, DocumentData, getDocs, QuerySnapshot } from "firebase/firestore";
+import { addDoc, collection, deleteDoc, doc, DocumentData, getDocs, QuerySnapshot } from "firebase/firestore";
 import { db } from "../../firebase.config";
 import { PreRegister } from "../../interfaces/interfaces";
 
@@ -38,31 +38,14 @@ export const getPreRegisters = async () => {
     }
 }
 
+export const deletePreRegister = async (docId: string) => {
+    try {
+        const docRef = doc(db, 'preregisters', docId);
+        const response = await deleteDoc(docRef)
+        return response;
+    } catch (error) {
+        console.log(error);
 
-// export const getUsersByService = async (idService: number) => {
+    }
+}
 
-
-//     try {
-//         const collectionRef = collection(db, 'users');
-//         const q = query(collectionRef, where("serviceType", "==", idService));
-//         const querySnapshot = await getDocs(q);
-
-//         return userMapping(querySnapshot);
-
-
-//     } catch (error) {
-//         console.log(error);
-
-//     }
-// }
-
-// export const getUserById = async (id: number) => {
-//     try {
-//         const docRef = doc(db, "users", String(id));
-//         const document = await getDoc(docRef);
-//         return document.data();
-//     } catch (error) {
-//         console.log(error);
-
-//     }
-// }

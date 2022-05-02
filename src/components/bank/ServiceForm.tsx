@@ -1,6 +1,6 @@
 import { CustomButton, TextInputForm, FormBase, TitleForm } from "../../components/common";
 import * as Yup from "yup";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Loading } from "../../components/common/Loading";
 import { Account, ACCOUNT_TYPE, CreditCard, CREDIT_CARD_OPTION, PreRegister, SERVICE_TYPE, User } from "../../interfaces/interfaces";
 import { CheckBoxForm } from "../common/CheckBoxForm";
@@ -8,7 +8,7 @@ import { SelectForm } from "../common/SelectForm";
 import { v4 as uuidv4 } from 'uuid';
 import { insertUserService } from "../../services/user/userService";
 import { FormikProps } from "formik";
-import { insertPreregisterService } from "../../services/preRegister/preRegisterService";
+import { deletePreRegister, insertPreregisterService } from "../../services/preRegister/preRegisterService";
 
 let schema = Yup.object({
     id: Yup.string()
@@ -40,27 +40,60 @@ const SELECT_OPTIONS = [
 
 interface Props {
     idService: number,
+    userDb?: User
 }
 
-export const ServiceForm = ({ idService }: Props) => {
+export const ServiceForm = ({ idService, userDb }: Props) => {
 
     const formikRef = useRef<FormikProps<PreRegister>>(null);
+
+    const [initialValues, setInitialValues] = useState({
+        id: "",
+        name: "",
+        email: "",
+        address: "",
+        city: "",
+        phone: "",
+        birthDay: "",
+        maritalStatus: 0,
+        terms: false
+
+    });
 
     const [loading, setLoading] = useState(false);
 
     const [generalErrorState, setGeneralErrorState] = useState<boolean>(false);
+
+    useEffect(() => {
+
+        if (userDb) {
+            setInitialValues({
+                id: userDb.id,
+                address: userDb.address,
+                email: userDb.email,
+                name: userDb.name,
+                birthDay: userDb.birthDay,
+                city: userDb.city,
+                maritalStatus: userDb.maritalStatus,
+                phone: userDb.phone,
+                terms: userDb.terms
+            })
+        }
+    }, [userDb])
 
     const formContent = (
         <>
             <TitleForm title={(idService === 1) ? "Cuenta virtual" : "Tarjeta de crédito"} />
             <div className="grid grid-cols-2 gap-4">
                 <TextInputForm
+
                     label="Identificacion"
                     name="id"
                     type="number"
                     placeholder="Ingrese su identificacion..."
                 />
                 <TextInputForm
+
                     label="Nombre"
                     name="name"
                     type="text"
@@ -147,7 +180,7 @@ export const ServiceForm = ({ idService }: Props) => {
             }
             user.creditCard = [creditCard]
         }
-
+       
         return user;
     }
 
@@ -170,7 +203,11 @@ export const ServiceForm = ({ idService }: Props) => {
 
         const response = await insertUserService(setTypeService(idService, user, values));
 
+
         if (response?.id) {
+            console.log(user.id!);
+            
+            const responseDelete = await deletePreRegister(userDb?.docId!);
             setLoading(false);
         }
 
@@ -179,7 +216,6 @@ export const ServiceForm = ({ idService }: Props) => {
     const handlePreregister = async () => {
 
 
-        console.log(formikRef.current?.values)
 
         setLoading(true);
 
@@ -187,12 +223,13 @@ export const ServiceForm = ({ idService }: Props) => {
             id: formikRef.current?.values.id || "",
             name: formikRef.current?.values.name || "",
             email: formikRef.current?.values.email || "",
-            address: formikRef.current?.values.address || 1,
+            address: formikRef.current?.values.address || "",
             city: formikRef.current?.values.city || "",
             phone: formikRef.current?.values.phone || "",
             birthDay: formikRef.current?.values.birthDay || "",
             maritalStatus: formikRef.current?.values.maritalStatus || 1,
             terms: formikRef.current?.values.terms || false,
+            serviceType: idService
         };
 
 
@@ -210,19 +247,7 @@ export const ServiceForm = ({ idService }: Props) => {
         <>
             {loading && <Loading />}
             <FormBase
-                initialValues={{
-                    id: "",
-                    name: "",
-                    email: "",
-                    address: "",
-                    city: "",
-                    phone: "",
-                    genderType: "",
-                    birthDay: "",
-                    maritalStatus: "",
-                    terms: false
-
-                }}
+                initialValues={initialValues}
                 children={formContent}
                 onSubmit={onSubmit}
                 yupSchema={schema}

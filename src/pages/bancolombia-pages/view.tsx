@@ -43,7 +43,7 @@ export const ViewService = () => {
                 <ButtonOptions setOptionSelected={setOptionSelected} />
             </div>
             <div className="py-8 px-2 sm:px-2 lg:px-8">
-                <Table data={user} />
+                <Table searchType={optionSelected} data={user} />
             </div>
         </div>
     );

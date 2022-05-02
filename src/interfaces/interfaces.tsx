@@ -34,8 +34,8 @@ export interface User {
     name: string;
     maritalStatus: number;
     birthDay: string;
-    address: number;
-    city?: string;
+    address: string;
+    city: string;
     email: string,
     phone: string,
     terms: false,
