@@ -1,13 +1,14 @@
 import { CustomButton, TextInputForm, FormBase, TitleForm } from "../../components/common";
 import * as Yup from "yup";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Loading } from "../../components/common/Loading";
-import { Account, ACCOUNT_TYPE, CREDIT_CARD_OPTION, User } from "../../interfaces/interfaces";
-import { useNavigate } from "react-router-dom";
+import { Account, ACCOUNT_TYPE, CreditCard, CREDIT_CARD_OPTION, PreRegister, SERVICE_TYPE, User } from "../../interfaces/interfaces";
 import { CheckBoxForm } from "../common/CheckBoxForm";
 import { SelectForm } from "../common/SelectForm";
 import { v4 as uuidv4 } from 'uuid';
-import { insertAccount } from "../../services/firestoreService";
+import { insertUserService } from "../../services/user/userService";
+import { FormikProps } from "formik";
+import { insertPreregisterService } from "../../services/preRegister/preRegisterService";
 
 let schema = Yup.object({
     id: Yup.string()
@@ -42,7 +43,9 @@ interface Props {
 }
 
 export const ServiceForm = ({ idService }: Props) => {
-    const navigate = useNavigate();
+
+    const formikRef = useRef<FormikProps<PreRegister>>(null);
+
     const [loading, setLoading] = useState(false);
 
     const [generalErrorState, setGeneralErrorState] = useState<boolean>(false);
@@ -106,14 +109,14 @@ export const ServiceForm = ({ idService }: Props) => {
                     type="checkbox"
                 />
                 {
-                    idService === 2 && <SelectForm
+                    idService === SERVICE_TYPE.creditCard && <SelectForm
                         label="Tipo de tarjeta de crédito"
                         name="creditCardType"
                         options={CREDIT_CARD_OPTION}
                     />
                 }
                 {
-                    idService === 1 && <SelectForm
+                    idService === SERVICE_TYPE.virtualAccount && <SelectForm
                         label="Tipo de cuenta"
                         name="accountType"
                         options={ACCOUNT_TYPE}
@@ -130,11 +133,27 @@ export const ServiceForm = ({ idService }: Props) => {
         </>
     );
 
-    const goToLoginPage = () => {
-        navigate("/login", { replace: true });
-    };
+    const setTypeService = (idService: number, user: User, values: any) => {
+        if (idService === SERVICE_TYPE.virtualAccount) {
+            const account: Account = {
+                id: uuidv4(),
+                type: values.accountType
+            }
+            user.accounts = [account]
+        } else {
+            const creditCard: CreditCard = {
+                id: uuidv4(),
+                name: values.creditCardType,
+            }
+            user.creditCard = [creditCard]
+        }
+
+        return user;
+    }
 
     const onSubmit = async (values: { [key: string]: any }) => {
+
+        setLoading(true);
 
         const user: User = {
             id: values.id,
@@ -145,22 +164,47 @@ export const ServiceForm = ({ idService }: Props) => {
             phone: values.phone,
             birthDay: values.birthDay,
             maritalStatus: values.maritalStatus,
-            terms: values.terms
+            terms: values.terms,
+            serviceType: idService
         };
 
-        const account: Account = {
-            user : user,
-            type : values.accountType
-        }
+        const response = await insertUserService(setTypeService(idService, user, values));
 
-        const response = await insertAccount(account);
-        console.log(response);
-        
-        setLoading(true);
+        if (response?.id) {
+            setLoading(false);
+        }
 
     };
 
-    if (idService === 0) return null;
+    const handlePreregister = async () => {
+
+
+        console.log(formikRef.current?.values)
+
+        setLoading(true);
+
+        const preRegister: PreRegister = {
+            id: formikRef.current?.values.id || "",
+            name: formikRef.current?.values.name || "",
+            email: formikRef.current?.values.email || "",
+            address: formikRef.current?.values.address || 1,
+            city: formikRef.current?.values.city || "",
+            phone: formikRef.current?.values.phone || "",
+            birthDay: formikRef.current?.values.birthDay || "",
+            maritalStatus: formikRef.current?.values.maritalStatus || 1,
+            terms: formikRef.current?.values.terms || false,
+        };
+
+
+        const response = await insertPreregisterService(preRegister);
+
+        if (response?.id) {
+            setLoading(false);
+        }
+
+    };
+
+    if (idService === SERVICE_TYPE.noService) return null;
 
     return (
         <>
@@ -182,8 +226,19 @@ export const ServiceForm = ({ idService }: Props) => {
                 children={formContent}
                 onSubmit={onSubmit}
                 yupSchema={schema}
+                innerRef={formikRef}
                 className="flex flex-col gap-2 shadow-md p-4"
             />
+            <div >
+                {
+                    idService !== SERVICE_TYPE.noService && <CustomButton
+                        onClick={handlePreregister}
+                        type="button"
+                        content="Guardar pre-registro"
+                        className="block mt-4 w-full py-2 px-3 border border-transparent rounded-md text-white font-medium bg-gray-700 shadow-sm sm:text-sm mb-5 hover:bg-gray-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-700 focus-visible:ring-offset-2 focus-visible:ring-offset-gray-50"
+                    />
+                }
+            </div>
         </>
     );
 };

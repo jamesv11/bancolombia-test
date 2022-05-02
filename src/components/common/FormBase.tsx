@@ -21,6 +21,7 @@ interface Props extends ComponentExtendStyle {
   ) => void | Promise<any>) &
     Function;
   sucess?: boolean;
+  innerRef?: any;
 }
 
 export const FormBase = ({
@@ -29,13 +30,15 @@ export const FormBase = ({
   children,
   initialValues,
   className,
-  sucess,
+  innerRef
 }: Props) => {
   return (
     <Formik
+      innerRef={innerRef}
       initialValues={initialValues}
       onSubmit={onSubmit}
       validationSchema={yupSchema}
+      
     >
       {(formik) => (
         <Form className={className} noValidate>

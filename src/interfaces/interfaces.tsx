@@ -25,10 +25,8 @@ export interface AppState {
 }
 
 export interface CreditCard {
+    id: string,
     name: string,
-    description: string,
-    handlingFee: string,
-    image: string
 }
 
 export interface User {
@@ -40,16 +38,20 @@ export interface User {
     city?: string;
     email: string,
     phone: string,
-    terms: false
+    terms: false,
+    serviceType?: number,
+    accounts?: Account[],
+    creditCard?: CreditCard[],
+    docId?: string
 }
 
 export interface Account {
-    user: User,
+    id: string,
     type: string
 }
 
-export interface PreRegister {
-    user: User
+export interface PreRegister extends User {
+    reason?: string
 }
 
 export interface Tag {
@@ -89,5 +91,13 @@ export const ACCOUNT_TYPE = [
         value: 2
     },
 ]
+
+
+export const SERVICE_TYPE = {
+    virtualAccount: 1,
+    creditCard: 2,
+    noService: 0
+}
+
 
 
